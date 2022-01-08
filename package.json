@@ -7,7 +7,8 @@
     "start": "cd frontend && npm start",
     "dev": "concurrently \"cd frontend && npm run dev\" \"cd backend && sanity start\"",
     "format": "prettier --write \"**/*.{js,ts,tsx}\"",
-    "lint": "eslint . --ext ts --ext tsx --ext js --fix"
+    "lint": "eslint . --ext ts --ext tsx --ext js --fix",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "concurrently": "^6.5.1"
   },
   "devDependencies": {
+    "eslint": "^8.6.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.3",
@@ -34,5 +36,11 @@
     "husky": "^7.0.4",
     "lint-staged": "^12.1.4",
     "prettier": "^2.5.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js, jsx}": [
+      "npm run lint",
+      "npm run format"
+    ]
   }
 }
