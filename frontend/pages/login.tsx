@@ -1,11 +1,36 @@
 import type { NextPage } from 'next';
-import GoogleLogin from 'react-google-login';
+import GoogleLogin, { GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
 import { useRouter } from 'next/router';
 import { FcGoogle } from 'react-icons/fc';
+import { IUser } from '../interfaces';
+import { client } from '../sanity-client';
 
 const Login: NextPage = () => {
+  const { push } = useRouter();
+
   const shareVideo = '/assets/share-vid.mp4';
   const logo = '/assets/logowhite.png';
+
+  const handleLogin = async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
+    const { profileObj } = response as GoogleLoginResponse;
+    if (profileObj) {
+      // Set to localStorage
+      localStorage.setItem('user', JSON.stringify(profileObj));
+
+      const { name, googleId, imageUrl } = profileObj;
+
+      // Fields to store user in Sanity
+      const newUser: IUser = {
+        _id: googleId,
+        _type: 'user',
+        username: name,
+        image: imageUrl,
+      };
+
+      const isCreated = await client.createIfNotExists(newUser);
+      if (isCreated) push('/');
+    }
+  };
 
   return (
     <main className="flex justify-start items-center flex-col h-screen">
@@ -26,7 +51,7 @@ const Login: NextPage = () => {
         </div>
         <div className="shadow-2x1">
           <GoogleLogin
-            clientId={process.env.NEXT_PUBLIC_GOOGLE_API_TOKEN}
+            clientId={process.env.NEXT_PUBLIC_GOOGLE_API_TOKEN as string}
             render={(renderProps) => (
               <button
                 type="button"
@@ -38,12 +63,8 @@ const Login: NextPage = () => {
                 Sign in with Google
               </button>
             )}
-            onSuccess={(response) => {
-              console.log(response);
-            }}
-            onFailure={(response) => {
-              console.log(response);
-            }}
+            onSuccess={handleLogin}
+            onFailure={handleLogin}
             cookiePolicy="single_host_origin"
           />
         </div>
